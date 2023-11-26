@@ -19,13 +19,33 @@ def plot_acc_offsets(ids, mode):
         # Example: Plot accumulated offset curve for 0x184.
         #   plt.plot(ids['184-sota'].elapsed_time_sec_hist, ids['184-sota'].acc_offset_us_hist, label='0x184')
 
-        # Your code goes here.
+        # Plot accumulated offset curve for 0x184, 0x3d1, and 0x180 for state-of-the-art IDS.
+        plt.figure(figsize=(10, 6))
+        plt.plot(ids['184-sota'].elapsed_time_sec_hist, ids['184-sota'].acc_offset_us_hist, label='0x184')
+        plt.plot(ids['3d1-sota'].elapsed_time_sec_hist, ids['3d1-sota'].acc_offset_us_hist, label='0x3d1')
+        plt.plot(ids['180-sota'].elapsed_time_sec_hist, ids['180-sota'].acc_offset_us_hist, label='0x180')
+        plt.xlabel('Elapsed Time (sec)')
+        plt.ylabel('Accumulated Offset (us)')
+        plt.title('Accumulated Offset for State-of-the-Art IDS')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
         # ====================== End of Your Code =========================
     elif mode == 'ntp-based':
         # ====================== Start of Your Code =========================
 
-        # Your code goes here
+        # Plot accumulated offset curve for 0x184, 0x3d1, and 0x180 for NTP-based IDS.
+        plt.figure(figsize=(10, 6))
+        plt.plot(ids['184-ntp'].elapsed_time_sec_hist, ids['184-ntp'].acc_offset_us_hist, label='0x184')
+        plt.plot(ids['3d1-ntp'].elapsed_time_sec_hist, ids['3d1-ntp'].acc_offset_us_hist, label='0x3d1')
+        plt.plot(ids['180-ntp'].elapsed_time_sec_hist, ids['180-ntp'].acc_offset_us_hist, label='0x180')
+        plt.xlabel('Elapsed Time (sec)')
+        plt.ylabel('Accumulated Offset (us)')
+        plt.title('Accumulated Offset for NTP-based IDS')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
         # ====================== End of Your Code =========================
 
@@ -58,13 +78,41 @@ def simulation_masquerade_attack(mode):
         plt.plot(ids.L_lower_hist, label='Lower Control Limit')
         plt.xlabel('Number of Batches')
         plt.ylabel('Control Limits')
-        plt.title('Control Limits for State-of-the-Art IDS')
+        plt.title(f'Control Limits for State-of-the-Art IDS during Masquerade Attack, N = {N}')
         plt.legend()
         plt.show()
     elif mode == 'ntp-based':
         # ====================== Start of Your Code =========================
         
-        # Your code goes here.
+        # Import the data for both message IDs
+        data_184 = import_data('../data/184.txt')
+        data_3d1 = import_data('../data/3d1.txt')
+
+        N = 20  # Batch size
+
+        # Construct a new dataset with the first 1000 batches of data_184,
+        # followed by 1000 batches of data_3d1 to simulate a masquerade attack.
+        data_184 = np.asarray(data_184[0:1000 * N]) - data_184[0]  # Normalize timestamps
+        data_3d1 = np.asarray(data_3d1[0:1000 * N]) - data_3d1[0]  # Normalize timestamps
+        # Spoofed message occurs 0.1 sec after the last legitimate message
+        data = np.append(data_184, data_184[-1] + 0.1 + data_3d1)
+
+        # Initialize the IDS for NTP-based mode
+        ids = IDS(T_sec=0.1, N=N, mode='ntp-based')
+
+        batch_num = 2000  # Total number of batches
+        for i in range(batch_num):
+            batch = np.asarray(data[i * N:(i + 1) * N])
+            ids.update(batch)
+
+        # Plot the control limits
+        plt.plot(ids.L_upper_hist, label='Upper Control Limit')
+        plt.plot(ids.L_lower_hist, label='Lower Control Limit')
+        plt.xlabel('Number of Batches')
+        plt.ylabel('Control Limits')
+        plt.title(f'Control Limits for NTP-based IDS during Masquerade Attack, N = {N}')
+        plt.legend()
+        plt.show()
         
         # ====================== End of Your Code  =========================
 
@@ -74,14 +122,76 @@ def simulation_cloaking_attack(mode):
     if mode == 'state-of-the-art':
         # ====================== Start of Your Code =========================
         
-        # Your code goes here.
+        # Import the data
+        data_184 = import_data('../data/184.txt')
+        data_180 = import_data('../data/180.txt')  # Spoofed as 0x184
+
+        N = 20  # Batch size
+        delta_T = -0.000029  # Time delay for cloaking attack
+
+        # Adjust the timestamps for 0x180 to simulate the attack
+        # Assume that the attack starts after the first 1000 batches of data_184
+        data_184 = np.asarray(data_184[0:1000 * N]) - data_184[0]
+        data_180 = np.asarray(data_180[0:1000 * N]) - data_180[0] + delta_T
+
+        # Concatenate the legitimate and spoofed messages
+        data = np.append(data_184, data_184[-1] + 0.1 + data_180)
+
+        # Initialize the IDS for state-of-the-art mode
+        ids = IDS(T_sec=0.1, N=N, mode='state-of-the-art')
+
+        # Process the batches of messages through the IDS
+        batch_num = 2000
+        for i in range(batch_num):
+            batch = np.asarray(data[i * N:(i + 1) * N])
+            ids.update(batch)
+
+        # Plot the control limits
+        plt.plot(ids.L_upper_hist, label='Upper Control Limit')
+        plt.plot(ids.L_lower_hist, label='Lower Control Limit')
+        plt.xlabel('Number of Batches')
+        plt.ylabel('Control Limits')
+        plt.title(f'Control Limits for State-of-the-Art IDS during Cloaking Attack, N = {N}')
+        plt.legend()
+        plt.show()
 
         # ====================== End of Your Code =========================
 
     elif mode == 'ntp-based':
         # ====================== Start of Your Code =========================
         
-        # Your code goes here.
+        # Import the data
+        data_184 = import_data('../data/184.txt')
+        data_180 = import_data('../data/180.txt')  # Spoofed as 0x184
+
+        N = 20  # Batch size
+        delta_T = -0.000029  # Time delay for cloaking attack
+
+        # Adjust the timestamps for 0x180 to simulate the attack
+        # Assume that the attack starts after the first 1000 batches of data_184
+        data_184 = np.asarray(data_184[0:1000 * N]) - data_184[0]
+        data_180 = np.asarray(data_180[0:1000 * N]) - data_180[0] + delta_T
+
+        # Concatenate the legitimate and spoofed messages
+        data = np.append(data_184, data_184[-1] + 0.1 + data_180)
+
+        # Initialize the IDS for NTP-based mode
+        ids = IDS(T_sec=0.1, N=N, mode='ntp-based')
+
+        # Process the batches of messages through the IDS
+        batch_num = 2000
+        for i in range(batch_num):
+            batch = np.asarray(data[i * N:(i + 1) * N])
+            ids.update(batch)
+
+        # Plot the control limits
+        plt.plot(ids.L_upper_hist, label='Upper Control Limit')
+        plt.plot(ids.L_lower_hist, label='Lower Control Limit')
+        plt.xlabel('Number of Batches')
+        plt.ylabel('Control Limits')
+        plt.title(f'Control Limits for NTP-based IDS during Cloaking Attackn, N = {N}')
+        plt.legend()
+        plt.show()
 
         # ====================== End of Your Code =========================
 
@@ -98,7 +208,8 @@ if __name__ == '__main__':
 
     ids = dict()
 
-    N = 20      # Change this to 30 for Task 4
+    # N = 20      # task2,3
+    N = 30      # task4
     ids['184-sota'] = IDS(T_sec=0.1, N=N, mode='state-of-the-art')
     ids['184-ntp'] = IDS(T_sec=0.1, N=N, mode='ntp-based')
 
@@ -130,14 +241,14 @@ if __name__ == '__main__':
 
 
     # Task 2: Plot accumulated offset curves for 0x184, 0x3d1, and 0x180, for the state-of-the-art IDS.
-    plot_acc_offsets(ids, "state-of-the-art")
+    # plot_acc_offsets(ids, "state-of-the-art")
 
     # Task 3: Plot accumulated offset curves for 0x184, 0x3d1, and 0x180, for the NTP-based IDS.
-    plot_acc_offsets(ids, "ntp-based")
+    # plot_acc_offsets(ids, "ntp-based")
 
     # Task 4: Change N to 30, and repeat Tasks 2 and 3.
-    # plot_acc_offsets(ids, "state-of-the-art")
-    # plot_acc_offsets(ids, "ntp-based")
+    plot_acc_offsets(ids, "state-of-the-art")
+    plot_acc_offsets(ids, "ntp-based")
 
     # Task 5: Simulate the masquerade attack, and plot upper/lower control limits.
     simulation_masquerade_attack("state-of-the-art")

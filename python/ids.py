@@ -93,7 +93,12 @@ class IDS:
             # ====================== Start of Your Code =========================
             # TODO: Compute curr_avg_offset_us and curr_acc_offset_us for state-of-the-art IDS
 
-            # Your code goes here. 
+            # Equation (1)
+            O_avg_k = (1/(self.N - 1)) * np.sum([a[i] - (a[0] + i * prev_mu_T_sec) for i in range(1, self.N)])
+            curr_avg_offset_us = O_avg_k * 1
+
+            # Equation (2)
+            curr_acc_offset_us = prev_acc_offset_us + abs(curr_avg_offset_us)
             
             # ====================== End of Your Code =========================
 
@@ -101,7 +106,12 @@ class IDS:
             # ====================== Start of Your Code =========================
             # TODO: Compute curr_avg_offset_us and curr_acc_offset_us for NTP-based IDS
 
-            # Your code goes here. 
+            # Equation (3)
+            O_avg_k = self.T_sec - (a[-1] - a0) / self.N
+            curr_avg_offset_us = O_avg_k * 1e6  # Convert to microseconds
+
+            # Equation (4)
+            curr_acc_offset_us = prev_acc_offset_us + self.N * curr_avg_offset_us 
 
             # ====================== End of Your Code =========================
 
@@ -128,9 +138,19 @@ class IDS:
         #   P[k] -> curr_P
         #   S[k] -> curr_skew
         #
-        # TODO: Implement the RLS algorithm
+        # TODO: Implement the RLS algorithm 
 
-        # Your code goes here. 
+        # Define the forgetting factor lambda
+        l = 0.9995  # A common choice for the forgetting factor close to 1
+
+        # Update the gain G[k]
+        G_K = (pow(l, -1) * prev_P * time_elapsed_sec) / (1 + pow(l, -1) * time_elapsed_sec**2 * prev_P)
+
+        # Update the covariance P[k]
+        curr_P = pow(l, -1) * (prev_P - G_K * time_elapsed_sec * prev_P)
+
+        # Update the skew estimate S[k]
+        curr_skew = prev_skew + G_K * curr_error
 
         # ====================== End of Your Code =========================
 
@@ -166,7 +186,13 @@ class IDS:
         # TODO: 1) Normalize curr_error_sample, 2) compute curr_L_upper and curr_L_lower
         # Store the normalized error in `normalized_error`
 
-        # Your code goes here. 
+        # Normalize the current error sample using the sensitivity parameter kappa
+        normalized_error = (curr_error_sample - mu_e) / sigma_e
+
+        # Compute the current upper and lower control limits (L+ and L-)
+        # Equations (5)
+        curr_L_upper = max(0, prev_L_upper + normalized_error - kappa)
+        curr_L_lower = max(0, prev_L_lower - normalized_error - kappa)
         
         # ====================== End of Your Code =========================
 
