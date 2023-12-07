@@ -60,7 +60,7 @@ Plot 6
 
 Question: Which IDS can detect the masquerade attack? Why?
 
-Response: 
+Response: NTP based IDS can detect the masquarade attack this is evident in the control limit graphs as their is an exponential increase in the upper control limit of the NTP IDS plot around 1000 batches while the lower limit remains at 0
 
 ### Task 6: Cloaking Attack
 
@@ -74,12 +74,15 @@ Plot 8
 
 Question: Which IDS can detect the cloaking attack? Why?
 
-Response: 
+Response: The control limits of the State-of-the-art IDS remains the same like in the masquarade attack (always at 0). The lower control limits of the NTP based attack on the other hand spike at 250 batches and 700 batches to the same levels while the upper limits remain at 0. These sudden spikes indicate abnormal behavior in the ECU messaging system and likely indicative of an attack. The cloaking attack is unique as these spikes occur individually and do not exponentially increase like the masquarade attack. This is due to the fact that the cloaking attack immediately imitates the correct clock skew.
 
 Question: Comparing masquerade and cloaking attacks, comment on the limitations of a clock-skew
 based IDS
 
-Response: 
+Response: Clock Skew based IDS are largely ineffective at detecting cloaking attacks as they rely on clock skew to detect an attack.
+The purpose of a cloaking attack is to create an artifical clock skew to simulate a legitimate ECU. A masquarade attack on the other hand does not 
+artifically simulate clock skew making it easily identifies by a clock skew based IDS. 
+
 
 ## Additional Questions
 
