@@ -98,7 +98,7 @@ Response: The adversary chooses ∆T for the cloaking attack on the clock skew d
 Question: What is Maximum Slackness Index (MSI), and what does it measure? 
 briefly comment on the performance of cloaking attack on an IDS in terms of MSI.
 
-Response: 
+Response: The Maximum Slackness Index (MSI) is a metric that measures the range of added delay ΔT for a successful cloaking attack. It is calculated as the difference between the maximum and minimum values of ΔT that allow for a successful attack. The normalized MSI is the ratio of MSI (in microseconds) to the message period (in seconds), with its unit being parts per million (ppm). A smaller MSI value indicates a more effective Intrusion Detection System (IDS) and less leeway for the attacker, as the attacker's clock skew needs to closely match the targeted Electronic Control Unit (ECU) to avoid detection.
 
 ### 3 
 
@@ -106,11 +106,22 @@ Question: Based on [2], explain under what circumstances, two messages are likel
 Based on the analysis in Section IV-C and Fig. 10 in [3], explain under what circumstances, two
 messages are likely to be highly correlated.
 
-Response: 
+Response: Two messages are likely to be highly correlated if they are:
+Sent by the same ECU, particularly if they are consecutively transmitted.
+Have similar average clock offsets, which would result in a high correlation coefficient (ρ) close to 1.
+
+he analysis and Fig. 10 suggest that:
+Consecutive messages from the same ECU are highly correlated.
+Messages from different ECUs are less correlated.
 
 ### 4
 
 Question: Based on [3], describe how to launch the cloaking attack on the correlation detector, and briefly
 explain why it works.
 
-Response: 
+Response: To launch a cloaking attack on a correlation detector, the attacker:
+Observes the targeted message and identifies any sibling messages.
+Begins transmitting the spoofed message immediately after the sibling message's transmission ends, ensuring that the average offsets of the targeted and sibling messages are equivalent and show high correlation. 
+This strategy is effective because:
+If the spoofed message has a sibling message with highly correlated offsets, the correlation detector, which tracks the correlation of two highly correlated messages, can be deceived.
+The similarity in clock skew between the impersonating and targeted ECUs can bypass the clock skew detector, and if executed correctly, the correlation detector as well.
