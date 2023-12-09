@@ -110,7 +110,7 @@ Response: Two messages are likely to be highly correlated if they are:
 Sent by the same ECU, particularly if they are consecutively transmitted.
 Have similar average clock offsets, which would result in a high correlation coefficient (ρ) close to 1.
 
-he analysis and Fig. 10 suggest that:
+The analysis and Fig. 10 suggest that:
 Consecutive messages from the same ECU are highly correlated.
 Messages from different ECUs are less correlated.
 
